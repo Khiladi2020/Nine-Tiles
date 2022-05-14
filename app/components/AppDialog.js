@@ -4,7 +4,7 @@ import {View, StyleSheet, Modal, TouchableWithoutFeedback} from 'react-native';
 const AppDialog = props => {
   return (
     <Modal visible={props.visible} transparent>
-      <TouchableWithoutFeedback onPress={props.close}>
+      <TouchableWithoutFeedback onPress={props.onClose}>
         <View style={styles.modal}>
           <View style={styles.main}>{props.children}</View>
         </View>
