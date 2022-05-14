@@ -15,7 +15,9 @@ const AppDialog = props => {
       <Modal visible={props.visible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={props.onClose}>
           <View style={styles.modal}>
-            <View style={styles.main}>{props.children}</View>
+            <TouchableWithoutFeedback>
+              <View style={styles.main}>{props.children}</View>
+            </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
       </Modal>
