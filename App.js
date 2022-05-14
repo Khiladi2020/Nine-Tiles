@@ -1,8 +1,11 @@
 import React, {useState, useEffect} from 'react';
-import {Text, View, ToastAndroid, Alert, StatusBar} from 'react-native';
+import {ToastAndroid, Alert, StatusBar, Image} from 'react-native';
 
+import {shuffleListData} from './app/utils/shuffle';
 import GameScreen from './app/screens/GameScreen';
 import HomeScreen from './app/screens/HomeScreen';
+import AppText from './app/components/AppText';
+import AppDialog from './app/components/AppDialog';
 
 const TILES = [
   {
@@ -61,130 +64,165 @@ const TILES = [
   },
 ];
 
-const shuffleArray = array => {
-  for (let i = array.length - 1; i > 0; i--) {
-    let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
-
-    // swap elements array[i] and array[j]
-    // we use "destructuring assignment" syntax to achieve that
-    // you'll find more details about that syntax in later chapters
-    // same can be written as:
-    // let t = array[i]; array[i] = array[j]; array[j] = t
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-};
+const TOTAL_LIVES = 3;
 
 const App = () => {
   const [guessNumber, setGuessNumber] = useState(1);
-  const [chancesRemaining, setChancesRemaining] = useState(3);
+  const [livesRemaining, setLivesRemaining] = useState(3);
   const [tilesState, setTilesState] = useState(TILES);
-  const [gameWinStatus, setGameWinStatus] = useState('PENDING');
+  const [gameStatus, setGameStatus] = useState('PROGRESS');
   const [screenType, setScreenType] = useState('HOME');
+  const [showGameMessage, setShowGameMessage] = useState(false);
 
   const showToast = message => {
     ToastAndroid.show(message, ToastAndroid.SHORT);
   };
 
   const shuffleTiles = () => {
-    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    shuffleArray(numbers);
-    // create a deep copy
-    let newObj = TILES.map(val => Object.assign({}, val));
+    setTilesState(shuffleListData(TILES));
+  };
 
-    for (let i = 0; i < numbers.length; i++) {
-      newObj[i].value = numbers[i];
+  const updateTiles = (type, id = null) => {
+    switch (type) {
+      case 'reveal':
+        setTilesState(val =>
+          val.map(ele => (ele.id === id ? {...ele, revealed: true} : ele)),
+        );
+        break;
+      case 'revealAll':
+        setTilesState(val => val.map(ele => ({...ele, revealed: true})));
+        break;
     }
-    setTilesState(newObj);
   };
 
-  const revealCard = id => {
-    // if game already won than return
-    if (gameWinStatus !== 'PENDING') return;
-
-    if (tilesState.filter(ele => ele.id === id)[0].value === guessNumber) {
-      setGameWinStatus('WON');
-      Alert.alert('Status', 'Congrats!! You have won');
+  const updateGuessNumber = type => {
+    switch (type) {
+      case 'increase':
+        if (guessNumber === 9) return;
+        setGuessNumber(val => val + 1);
+        break;
+      case 'decrease':
+        if (guessNumber === 1) return;
+        setGuessNumber(val => val - 1);
     }
-
-    // update card status
-    setTilesState(val =>
-      val.map(ele => (ele.id === id ? {...ele, revealed: true} : ele)),
-    );
-
-    // decrease lives
-    decreaseChances();
   };
 
-  const revealAllCards = () => {
-    setTilesState(val => val.map(ele => ({...ele, revealed: true})));
-  };
-
-  const increaseCount = () => {
-    if (guessNumber === 9) {
-      showToast('Guess Number Cannot be more than 9');
-      return;
+  const updateLives = type => {
+    switch (type) {
+      case 'decrease':
+        if (livesRemaining === 0) return;
+        setLivesRemaining(val => val - 1);
+        break;
+      case 'reset':
+        setLivesRemaining(TOTAL_LIVES);
     }
-    setGuessNumber(value => value + 1);
   };
 
-  const decreaseCount = () => {
-    if (guessNumber == 1) {
-      showToast('Guess Number Cannot be negative');
-      return;
+  const updateGameStatus = type => {
+    switch (type) {
+      case 'win':
+        setGameStatus('WIN');
+        break;
+      case 'lose':
+        setGameStatus('LOSE');
+        break;
+      case 'reset':
+        setGameStatus('PROGRESS');
     }
-    setGuessNumber(value => value - 1);
   };
 
-  const decreaseChances = () => {
-    if (chancesRemaining === 0) return;
-    setChancesRemaining(value => value - 1);
-  };
-
-  const changeScreen = type => {
-    if (type == 'HOME') setScreenType('HOME');
-    else if (type == 'GAME') setScreenType('GAME');
-  };
-
-  const startGame = () => {
-    setChancesRemaining(3);
-    setGameWinStatus('PENDING');
-    // shuffle cards
-    shuffleTiles();
-    changeScreen('GAME');
+  const updateScreen = type => {
+    switch (type) {
+      case 'HOME':
+        setScreenType('HOME');
+        break;
+      case 'GAME':
+        setScreenType('GAME');
+    }
   };
 
   useEffect(() => {
-    if (chancesRemaining === 0 && gameWinStatus === 'PENDING') {
-      Alert.alert('Status', 'Game Over!');
-      setGameWinStatus('LOST');
+    // if no live remaining then game lost
+    if (livesRemaining === 0) {
+      setGameStatus('lose');
+      setShowGameMessage(true);
     }
-  }, [chancesRemaining, gameWinStatus]);
+  }, [livesRemaining]);
 
-  // if(screenType === "HOME") retu
+  const handleTileClick = id => {
+    // if game already won/lost than return
+    if (gameStatus !== 'PROGRESS') return;
+
+    // if no chances are there
+    if (livesRemaining === 0) return;
+
+    // check if current tile is already revealed
+    let tileRevealed = tilesState.filter(ele => ele.id === id)[0].revealed;
+    if (tileRevealed) return;
+
+    // check if current tile is correct one
+    let tileValue = tilesState.filter(ele => ele.id === id)[0].value;
+    if (tileValue === guessNumber) {
+      updateGameStatus('win');
+      updateTiles('reveal', id);
+      setShowGameMessage(true);
+      return;
+    }
+    // incase incorrect tile
+    updateTiles('reveal', id);
+    updateLives('decrease');
+  };
+
+  const startGame = () => {
+    updateLives('reset');
+    updateGameStatus('reset');
+    shuffleTiles();
+    updateScreen('GAME');
+  };
 
   return (
     <>
-      <StatusBar backgroundColor="#f2fde4" barStyle='dark-content'/>
+      <StatusBar backgroundColor="#f2fde4" barStyle="dark-content" />
       {screenType === 'HOME' ? (
         <HomeScreen
-          changeScreen={changeScreen}
+          changeScreen={updateScreen}
           guessNumber={guessNumber}
-          increaseCount={increaseCount}
-          decreaseCount={decreaseCount}
+          increaseCount={() => updateGuessNumber('increase')}
+          decreaseCount={() => updateGuessNumber('decrease')}
           startGame={startGame}
         />
       ) : (
         <GameScreen
-          changeScreen={changeScreen}
-          chancesRemaining={chancesRemaining}
-          decreaseChances={decreaseChances}
+          changeScreen={updateScreen}
+          livesRemaining={livesRemaining}
           tiles={tilesState}
-          onRevealCard={revealCard}
+          onTileClick={handleTileClick}
           guessNumber={guessNumber}
-          gameStatus={gameWinStatus}
-          revealAllCards={revealAllCards}
+          gameStatus={gameStatus}
+          revealAllTiles={() => updateTiles('revealAll')}
         />
       )}
+      <AppDialog
+        visible={showGameMessage}
+        onClose={() => setShowGameMessage(false)}>
+        {gameStatus === 'WIN' ? (
+          <>
+            <Image
+              style={{height: 150, width: 150, marginBottom:20}}
+              source={require('./app/assets/trophy.png')}
+            />
+            <AppText>Congratulations!</AppText>
+          </>
+        ) : (
+          <>
+            <Image
+              style={{height: 150, width: 150, marginBottom:20}}
+              source={require('./app/assets/game-over.png')}
+            />
+            <AppText>Game Over!</AppText>
+          </>
+        )}
+      </AppDialog>
     </>
   );
 };
