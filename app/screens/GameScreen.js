@@ -18,11 +18,16 @@ const getStatusMessage = gameStatus => {
 
 const GameScreen = props => {
   const status_msg = getStatusMessage(props.gameStatus);
+  const back_button_title =
+    props.gameStatus === 'PROGRESS' ? 'Go Back' : 'Restart';
 
   return (
     <AppScreen>
       <View style={styles.backNavigation}>
-        <AppButton title="Go Back" onPress={() => props.changeScreen('HOME')} />
+        <AppButton
+          title={back_button_title}
+          onPress={() => props.changeScreen('HOME')}
+        />
         <View style={styles.revealCard}>
           {props.gameStatus != 'PROGRESS' && (
             <AppButton title="Reveal Cards" onPress={props.revealAllTiles} />
