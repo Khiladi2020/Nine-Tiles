@@ -5,7 +5,7 @@
 
 A simple React Native application where user can choose a number and then guess the correct tile in 3 attempts.
 
-<img src="https://drive.google.com/file/d/1fKY0Cyw9ilc7AsIeGqxqfLDq2tQRE9xs/view?usp=sharing" width="240" height="500" />
+<img src="https://user-images.githubusercontent.com/54790775/168444519-55ce628e-8552-4171-9135-e4fb6662bc16.gif" width="240" height="500" />
 
 
 ---
