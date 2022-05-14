@@ -1,38 +1,10 @@
 import React, {useState, useEffect} from 'react';
 import {View, StyleSheet, TouchableNativeFeedback, Alert} from 'react-native';
+
 import AppButton from '../components/AppButton';
 import AppScreen from '../components/AppScreen';
 import AppText from '../components/AppText';
-
-const Card = props => {
-  const handlePress = () => {
-    props.onClick(props.id);
-  };
-
-  return (
-    <TouchableNativeFeedback onPress={handlePress}>
-      <View style={[cardStyles.card, props.showData ? cardStyles.show : {}]}>
-        {props.showData && <AppText>{props.value}</AppText>}
-      </View>
-    </TouchableNativeFeedback>
-  );
-};
-
-const cardStyles = StyleSheet.create({
-  card: {
-    height: 140,
-    width: 100,
-    borderRadius: 8,
-    backgroundColor: '#fa8100',
-    margin: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 10,
-  },
-  show: {
-    backgroundColor: '#f5b6da',
-  },
-});
+import Tile from '../components/Tile'
 
 const GameScreen = props => {
   return (
@@ -59,7 +31,7 @@ const GameScreen = props => {
         </View>
         <View style={styles.tiles}>
           {props.tiles.map(ele => (
-            <Card
+            <Tile
               key={ele.id}
               id={ele.id}
               title={ele.title}
