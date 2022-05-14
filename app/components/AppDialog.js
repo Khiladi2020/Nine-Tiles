@@ -1,15 +1,25 @@
 import React from 'react';
-import {View, StyleSheet, Modal, TouchableWithoutFeedback} from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Modal,
+  TouchableWithoutFeedback,
+  StatusBar,
+} from 'react-native';
 
 const AppDialog = props => {
+  if (!props.visible) return null;
   return (
-    <Modal visible={props.visible} transparent>
-      <TouchableWithoutFeedback onPress={props.onClose}>
-        <View style={styles.modal}>
-          <View style={styles.main}>{props.children}</View>
-        </View>
-      </TouchableWithoutFeedback>
-    </Modal>
+    <>
+      <StatusBar backgroundColor="rgba(0,0,0,0.5)" barStyle="dark-content" />
+      <Modal visible={props.visible} transparent animationType="fade">
+        <TouchableWithoutFeedback onPress={props.onClose}>
+          <View style={styles.modal}>
+            <View style={styles.main}>{props.children}</View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+    </>
   );
 };
 
