@@ -18,9 +18,17 @@ const HomeScreen = props => {
             <AppText style={styles.heading}>Select number</AppText>
           </View>
           <View style={styles.inputs}>
-            <AppButton title=" ADD " onPress={props.increaseCount} />
+            <AppButton
+              title=" ADD "
+              onPress={props.increaseCount}
+              disabled={props.guessNumber === 9}
+            />
             <AppText style={styles.guessText}>{props.guessNumber}</AppText>
-            <AppButton title=" DEC " onPress={props.decreaseCount} />
+            <AppButton
+              title=" DEC "
+              onPress={props.decreaseCount}
+              disabled={props.guessNumber === 1}
+            />
           </View>
         </View>
         <AppButton title="Start Game" onPress={props.startGame} />
